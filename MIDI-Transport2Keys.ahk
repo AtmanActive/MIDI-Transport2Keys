@@ -2,6 +2,113 @@
 #SingleInstance, force
 sendMode input
 
+; MIDI-Transport2Keys.ahk
+;
+; by AtmanActive 2022
+;
+; https://github.com/AtmanActive/MIDI-Transport2Keys
+;
+; v1.2 - add keys and mic modes to use keyboard shortcuts or audio device mute/unmute or both
+; v1.1 - add INI file save on MIDI input device selection
+; v1.0 - initial release
+;
+; GNU General Public License v3.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -64,7 +171,7 @@ Global MIDI_MOREDATA  := 0x3CC
 ; Defines the size of the standard chromatic scale
 Global MIDI_NOTE_SIZE := 12
 
-; Defines the midi notes 
+; Defines the midi notes
 Global MIDI_NOTES     := [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ]
 
 ; Defines the octaves for midi notes
@@ -75,7 +182,7 @@ Global MIDI_OCTAVES   := [ -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8 ]
 ; be accessed via the Midi object, since we cannot store it in the object due
 ; to how events work
 ; We will store the last event by the handle used to open the midi device, so
-; at least we won't clobber midi events from other devices if the user wants 
+; at least we won't clobber midi events from other devices if the user wants
 ; to fetch them specifically
 Global __midiInEvent        := {}
 Global __midiInHandleEvent  := {}
@@ -219,7 +326,7 @@ Class Midi
 
     deviceCount := DllCall( "winmm.dll\midiOutGetNumDevs" ) - 1
 
-    Loop %deviceCount% 
+    Loop %deviceCount%
     {
 
       midiInDevice := {}
@@ -269,15 +376,25 @@ Class Midi
       menuName := value.deviceName
       Menu, __MidInDevices, Add, %menuName%, __SelectMidiInDevice
     }
-
+		
     Menu, Tray, Add
     Menu, Tray, Add, MIDI Input Devices, :__MidInDevices
 
     Return
-
+		
     __SelectMidiInDevice:
 
       midiInDeviceId := A_ThisMenuItemPos - 1
+			midiInDeviceNm := A_ThisMenuItem
+			
+			For key, value In __midiInDevices
+			{
+				menuName := value.deviceName
+				Menu, __MidInDevices, Uncheck, %menuName%
+			}
+			
+			Menu, __MidInDevices, Check, %midiInDeviceNm%
+			
 
       if ( __midiInOpenHandles[midiInDeviceId] > 0 )
       {
@@ -285,7 +402,9 @@ Class Midi
       }
       else
       {
-        __OpenMidiIn( midiInDeviceId )        
+        __OpenMidiIn( midiInDeviceId )
+				IniWrite, %midiInDeviceId%, % a_scriptDir "\MIDI-Transport2Keys.ini", MIDI, midi_port_number
+				IniWrite, %midiInDeviceNm%, % a_scriptDir "\MIDI-Transport2Keys.ini", MIDI, midi_port_name
       }
 
       Return
@@ -351,7 +470,7 @@ __OpenMidiIn( midiInDeviceId )
     OnMessage( MIDI_LONGDATA,  "__MidiInCallback" )
     OnMessage( MIDI_ERROR,     "__MidiInCallback" )
     OnMessage( MIDI_LONGERROR, "__MidiInCallback" )
-    OnMessage( MIDI_MOREDATA,  "__MidiInCallback" ) 
+    OnMessage( MIDI_MOREDATA,  "__MidiInCallback" )
   }
 
   ; Add this device handle to our list of open devices
@@ -438,7 +557,7 @@ __MidiInCallback( wParam, lParam, msg )
   rawBytes := lParam
 
   ; Split up the raw midi bytes as per the midi spec
-  highByte  := lParam & 0xF0 
+  highByte  := lParam & 0xF0
   lowByte   := lParam & 0x0F
   data1     := (lParam >> 8) & 0xFF
   data2     := (lParam >> 16) & 0xFF
@@ -500,7 +619,7 @@ __MidiInCallback( wParam, lParam, msg )
     ; Look up the name of the note in the scale
     midiEvent.note := MIDI_NOTES[ noteScaleNumber + 1 ]
 
-    ; Determine the octave of the note in the scale 
+    ; Determine the octave of the note in the scale
     noteOctaveNumber := Floor( midiEvent.noteNumber / MIDI_NOTE_SIZE )
 
     ; Look up the octave for the note
@@ -546,7 +665,7 @@ __MidiInCallback( wParam, lParam, msg )
   else if ( midiEvent.status == "PitchWheel" )
   {
 
-    ; Store pitchwheel change, which is a combination of both data bytes 
+    ; Store pitchwheel change, which is a combination of both data bytes
     midiEvent.pitch := ( data2 << 7 ) + data1
 
   }
@@ -639,7 +758,7 @@ __MidiInCallback( wParam, lParam, msg )
     {
       If IsLabel( labelName )
         Gosub %labelName%
-    }   
+    }
   }
 
   ; Call debugging if enabled
@@ -660,7 +779,7 @@ __MidiEventDebug( midiEvent )
   debugStr .= "---`n"
 
   ; Always output event debug to any listening debugger
-  OutputDebug, % debugStr 
+  OutputDebug, % debugStr
 
   ; If lazy tooltip debugging is enabled, do that too
   if midiEventTooltips
@@ -709,32 +828,660 @@ __MidiEventDebug( midiEvent )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ; RUNTIME CODE
+
+menu, tray, add, About, About
 
 menu, tray, icon, % a_scriptDir "\MIDI-Transport2Keys.icl", 1
 menu, tray, add, Start with Windows, start_with_windows
 menu, tray, % fileExist(a_startup "\MIDI-Transport2Keys.lnk") ? ("check") : ("unCheck"), Start with Windows
 
+menu, tray, add, Open INI File, open_ini_file
 menu, tray, add, Test Mackie Play Event, MidiNoteOnA#5
 menu, tray, add, Test Mackie Stop Event, MidiNoteOnA5
 
-menu, tray, add, About, About
+Menu, __UseModes, Add, keys, use_switch_keys
+Menu, __UseModes, Add, mic, use_switch_mic
+Menu, Tray, Add, Use, :__UseModes
 
-iniRead, midi_port_number, % a_scriptDir "\settings.ini", settings, midi_port_number
 
+
+iniRead, midi_port_number, % a_scriptDir "\MIDI-Transport2Keys.ini", MIDI, midi_port_number
+iniRead, audio_device_id, % a_scriptDir "\MIDI-Transport2Keys.ini", Audio, audio_device_id
+iniRead, use_keys, % a_scriptDir "\MIDI-Transport2Keys.ini", Use, keys
+iniRead, use_mic, % a_scriptDir "\MIDI-Transport2Keys.ini", Use, mic
+
+if ( use_keys )
+	Menu, __UseModes, Check, keys
+
+if ( use_mic )
+	Menu, __UseModes, Check, mic
 
 midi := new Midi()
 midi.OpenMidiIn( midi_port_number )
 
+MicUnmuteParams =  /Unmute %audio_device_id%
+MicMuteParams =  /Mute %audio_device_id%
+
 Return
 
+; MACKIE STOP EVENT (UNMUTE)
 MidiNoteOnA5:
-	SendInput {F16}
+	If ( use_keys )
+		SendInput {F16}
+	If ( use_mic )
+		Run, % a_scriptDir "\svcl.exe " MicUnmuteParams, % a_scriptDir, Hide
 	menu, tray, icon, % a_scriptDir "\MIDI-Transport2Keys.icl", 2
 	Return
 
+; MACKIE PLAY EVENT (MUTE)
 MidiNoteOnA#5:
-	SendInput {F14}
+	If ( use_keys )
+		SendInput {F14}
+	If ( use_mic )
+		Run, % a_scriptDir "\svcl.exe " MicMuteParams, % a_scriptDir, Hide
 	menu, tray, icon, % a_scriptDir "\MIDI-Transport2Keys.icl", 3
 	Return
 
@@ -747,7 +1494,45 @@ start_with_windows:     ; tray menu label
 	menu, tray, % fileExist(a_startup "\MIDI-Transport2Keys.lnk") ? ("check") : ("unCheck"), Start with Windows
 	return
 
+
+
 About:
-	MsgBox, This program connects to a MIDI port and listens for Mackie Universal Control MIDI transport messages STOP and PLAY. When Mackie PLAY is received, a keypress F14 is issued, and, when Mackie STOP is received, a keypress F16 is issued. This is useful to have Mumble mute or deafen self automatically depending on DAW transport.
+	MsgBox, This program connects to a MIDI port and listens for Mackie Universal Control MIDI transport messages STOP and PLAY. When Mackie PLAY is received, a keypress F14 is issued, and, when Mackie STOP is received, a keypress F16 is issued. This is useful to have Mumble mute or deafen self automatically depending on DAW transport. v1.1
 	Return
 
+
+
+open_ini_file:
+	Run, % a_scriptDir "\MIDI-Transport2Keys.ini", % a_scriptDir
+	Return
+
+
+use_switch_keys:
+	If ( use_keys == 1 )
+	{
+		use_keys=0
+		Menu, __UseModes, Uncheck, keys
+	}
+	else
+	{
+		use_keys=1
+		Menu, __UseModes, Check, keys
+	}
+	IniWrite, %use_keys%, % a_scriptDir "\MIDI-Transport2Keys.ini", Use, keys
+	Return
+
+
+
+use_switch_mic:
+	If ( use_mic == 1 )
+	{
+		use_mic=0
+		Menu, __UseModes, Uncheck, mic
+	}
+	else
+	{
+		use_mic=1
+		Menu, __UseModes, Check, mic
+	}
+	IniWrite, %use_mic%, % a_scriptDir "\MIDI-Transport2Keys.ini", Use, mic
+	Return
