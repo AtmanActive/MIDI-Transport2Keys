@@ -1,5 +1,9 @@
 #NoEnv
 #SingleInstance, force
+If !A_IsAdmin
+Run *RunAs "%A_ScriptFullPath%"
+Process, Priority, , Realtime
+
 sendMode input
 
 ; MIDI-Transport2Keys.ahk
