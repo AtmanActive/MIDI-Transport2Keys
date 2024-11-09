@@ -1,5 +1,15 @@
 # MIDI-Transport2Keys
 
+
+
+There is a newer, more efficient AutoHotKey-v2 version of this app, focused solely on input-audio-device-muting/umuting here:
+
+[MIDI-Transport-to-Mute](https://github.com/AtmanActive/MIDI-Transport-to-Mute).
+
+
+
+
+
 Windows MIDI Mackie Universal Control transport Stop&amp;Play events translated to keypresses.
 
 This program connects to a windows MIDI port and listens for Mackie Universal Control MIDI transport messages STOP and PLAY. 
