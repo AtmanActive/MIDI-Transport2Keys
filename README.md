@@ -2,8 +2,10 @@
 
 
 
-There is a newer, more efficient AutoHotKey-v2 version of this app, focused solely on input-audio-device-muting/umuting here:
-
+> [!NOTE]
+> There is a newer, more efficient AutoHotKey-v2 version of this app.
+> 
+> Focused solely on input-audio-device-muting/umuting:
 [MIDI-Transport-to-Mute](https://github.com/AtmanActive/MIDI-Transport-to-Mute).
 
 
